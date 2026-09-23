@@ -1,4 +1,4 @@
-modules = ["nodejs-24"]
+modules = ["nodejs-20", "web", "bash"]
 
 [deployment]
 router = "application"
@@ -23,3 +23,6 @@ timeoutMs = 20000
 
 [userenv.shared]
 SUPABASE_URL = "https://nfklnbpurqhwilvinsdg.supabase.co"
+
+[nix]
+channel = "stable-25_05"
