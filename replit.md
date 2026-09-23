@@ -1,6 +1,6 @@
-# [Project name]
+# JARVIS Personal Memory
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+JARVIS is a personal memory assistant that saves exact thoughts, retrieves them through natural-language questions, and keeps a simple searchable history.
 
 ## Run & Operate
 
@@ -22,23 +22,40 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/jarvis-memory` — React/Vite web app with capture, ask, history, voice input, browser speech output, and PWA metadata.
+- `artifacts/api-server/src/routes/memories.ts` — memory CRUD endpoints.
+- `artifacts/api-server/src/routes/assistant.ts` — repeat, correction, search, and summary behavior.
+- `artifacts/api-server/src/lib/memory.ts` — lightweight classification and extraction without a paid AI dependency.
+- `lib/api-spec/openapi.yaml` — source of truth for the API contract.
+- `lib/db/src/schema/memories.ts` and `reminders.ts` — persistent memory and reminder storage.
+- `artifacts/jarvis-memory/src/index.css` — JARVIS visual language and responsive layout.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The original transcript is stored separately from the current working text so corrections never erase what was first captured.
+- Basic save, repeat, correction, and retrieval work without a paid AI service; an AI provider can be added behind the assistant route later.
+- Reminder records are kept in their own table even though notifications are not wired yet, so server-side scheduling can be added without changing memory storage.
+- Browser speech recognition and speech synthesis are optional enhancements; typed input always remains available.
+- The current development build uses the provisioned PostgreSQL database; Supabase connection and authenticated user scoping are the next integration step.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Save exact thoughts with automatic lightweight categories.
+- Ask JARVIS to repeat the latest memory or find older memories.
+- Correct the latest memory while preserving the original wording.
+- Search and open memory details from a newest-first history.
+- Use browser voice input and spoken replies when supported.
+- Delete a memory manually with confirmation.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the product simple and personal; do not turn it into a CRM, ERP, or admin dashboard.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run API codegen after changing `lib/api-spec/openapi.yaml`.
+- The artifact workflow supplies `PORT` and `BASE_PATH`; do not hard-code either into the app.
+- Browser voice features vary by device and browser, so errors must leave typed capture usable.
 
 ## Pointers
 

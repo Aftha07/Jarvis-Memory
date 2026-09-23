@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "JARVIS Personal Memory"
+description = "A simple personal AI memory assistant that lets one user speak or type memories, retrieve and correct them naturally, and review a searchable history from any device."
+version = "1.0.0"
+id = "artifacts/jarvis-memory"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20322
+
+[services.development]
+run = "pnpm --filter @workspace/jarvis-memory run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/jarvis-memory", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/jarvis-memory/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20322"
+BASE_PATH = "/"

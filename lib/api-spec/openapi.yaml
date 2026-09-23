@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: memories
+    description: Personal memory storage and retrieval
+  - name: assistant
+    description: Natural-language memory assistant actions
 paths:
   /healthz:
     get:
@@ -24,7 +28,147 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /memories:
+    get:
+      operationId: listMemories
+      tags: [memories]
+      summary: List memories
+      description: Returns the signed-in user's memories, newest first, with optional text search.
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        "200":
+          description: Memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Memory"
+    post:
+      operationId: createMemory
+      tags: [memories]
+      summary: Save a memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryInput"
+      responses:
+        "201":
+          description: Created memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+  /memories/{id}:
+    get:
+      operationId: getMemory
+      tags: [memories]
+      summary: Get a memory
+      parameters:
+        - $ref: "#/components/parameters/MemoryId"
+      responses:
+        "200":
+          description: Memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateMemory
+      tags: [memories]
+      summary: Correct a memory
+      parameters:
+        - $ref: "#/components/parameters/MemoryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryUpdate"
+      responses:
+        "200":
+          description: Updated memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteMemory
+      tags: [memories]
+      summary: Delete a memory
+      parameters:
+        - $ref: "#/components/parameters/MemoryId"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /assistant/query:
+    post:
+      operationId: queryAssistant
+      tags: [assistant]
+      summary: Ask JARVIS about saved memories
+      description: Handles saving, repeating, correcting, and searching memories.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssistantQuery"
+      responses:
+        "200":
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssistantResponse"
+  /assistant/summary:
+    get:
+      operationId: getMemorySummary
+      tags: [assistant]
+      summary: Get a lightweight memory summary
+      responses:
+        "200":
+          description: Memory summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemorySummary"
 components:
+  parameters:
+    MemoryId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    NotFound:
+      description: Memory not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +177,91 @@ components:
           type: string
       required:
         - status
+    Memory:
+      type: object
+      required:
+        - id
+        - originalText
+        - currentText
+        - category
+        - extractedData
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalText:
+          type: string
+        currentText:
+          type: string
+        category:
+          type: string
+        extractedData:
+          type: object
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MemoryInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+        category:
+          type: string
+    MemoryUpdate:
+      type: object
+      required: [currentText]
+      properties:
+        currentText:
+          type: string
+          minLength: 1
+    AssistantQuery:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+    AssistantResponse:
+      type: object
+      required: [reply, action, memory]
+      properties:
+        reply:
+          type: string
+        action:
+          type: string
+          enum: [saved, repeated, corrected, answered, no_match]
+        memory:
+          anyOf:
+            - $ref: "#/components/schemas/Memory"
+            - type: "null"
+        memories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Memory"
+    MemorySummary:
+      type: object
+      required: [total, today, latest]
+      properties:
+        total:
+          type: integer
+        today:
+          type: integer
+        latest:
+          anyOf:
+            - $ref: "#/components/schemas/Memory"
+            - type: "null"
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
 
