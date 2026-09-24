@@ -16,10 +16,10 @@ desktop runtime code or change the existing application.
 - The web app is a React/Vite artifact in `artifacts/jarvis-memory`.
 - The API is an Express service in `artifacts/api-server`.
 - `lib/db` connects through `DATABASE_URL` using Drizzle and PostgreSQL.
-- No Supabase client or authentication middleware is present in the current
-  routes. Although `.replit` contains a `SUPABASE_URL`, source search finds no
-  code using it. `README.md` and `replit.md` say Supabase authentication is a
-  future step.
+- No Supabase client or authentication middleware was present in the original
+  routes. Although `.replit` contains a `SUPABASE_URL`, source search found no
+  code using it. `README.md` and `replit.md` still describe Supabase
+  authentication as a future step.
 - `artifacts/api-server/src/routes/memories.ts` and
   `artifacts/api-server/src/routes/assistant.ts` both use the hard-coded
   `local-user` identity. The API currently has no user authentication or
@@ -31,20 +31,24 @@ desktop runtime code or change the existing application.
   `extractReminder()` during memory creation. There are currently no reminder
   read, update, completion, or notification endpoints.
 
-### Blocking integration question
+### Confirmed source of truth
 
-The requested target says Supabase and authenticated user data already exist,
-but the checked-in implementation does not use either. Before implementing
-desktop sign-in or changing the server's data layer, establish which is
-authoritative:
+The user confirmed that Supabase is canonical. The connected project matches
+the configured project URL and already has `public.memories` and
+`public.reminders`, UUID `user_id` references to `auth.users`, and RLS policies
+for per-user select/insert/update/delete. Both tables currently contain zero
+rows. The Replit development database also has zero memory and reminder rows,
+so there are currently no memory records to migrate.
 
-1. The Supabase project named in the request (including its Auth configuration
-   and current data/schema), which must remain the sole memory store; or
-2. The currently running Replit PostgreSQL/Drizzle implementation.
+The Supabase integration is now connected for application runtime requests.
+The Replit PostgreSQL/Drizzle database must not be used as a second store. Do
+not drop it or remove its tables as part of this feature; those are destructive
+cleanup actions and are outside the requested connection work.
 
-Do not point the companion at a database directly, make a second database, or
-silently migrate/replace data while this is unresolved. Keep this as an explicit
-integration gate in implementation planning.
+The current implementation still needs to replace its hard-coded
+`local-user` behavior with Supabase-authenticated requests. Do not assume that
+auth is already wired into the web app just because the Supabase project has
+auth-linked foreign keys and RLS policies.
 
 ## Proposed shape
 

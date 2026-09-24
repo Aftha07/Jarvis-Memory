@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Supabase authentication and session operations
   - name: memories
     description: Personal memory storage and retrieval
   - name: assistant
@@ -28,12 +30,75 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getAuthSession
+      tags: [auth]
+      summary: Read the current authentication session
+      responses:
+        "200":
+          description: Current user or signed-out state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+  /auth/signup:
+    post:
+      operationId: signUp
+      tags: [auth]
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthCredentials"
+      responses:
+        "200":
+          description: Signed in or email confirmation required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+  /auth/login:
+    post:
+      operationId: signIn
+      tags: [auth]
+      summary: Sign in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthCredentials"
+      responses:
+        "200":
+          description: Signed-in user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+  /auth/logout:
+    post:
+      operationId: signOut
+      tags: [auth]
+      summary: Sign out and revoke the current session
+      responses:
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignOutResult"
   /memories:
     get:
       operationId: listMemories
       tags: [memories]
       summary: List memories
       description: Returns the signed-in user's memories, newest first, with optional text search.
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       parameters:
         - name: search
           in: query
@@ -61,6 +126,9 @@ paths:
       operationId: createMemory
       tags: [memories]
       summary: Save a memory
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -79,6 +147,9 @@ paths:
       operationId: getMemory
       tags: [memories]
       summary: Get a memory
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       parameters:
         - $ref: "#/components/parameters/MemoryId"
       responses:
@@ -94,6 +165,9 @@ paths:
       operationId: updateMemory
       tags: [memories]
       summary: Correct a memory
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       parameters:
         - $ref: "#/components/parameters/MemoryId"
       requestBody:
@@ -115,6 +189,9 @@ paths:
       operationId: deleteMemory
       tags: [memories]
       summary: Delete a memory
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       parameters:
         - $ref: "#/components/parameters/MemoryId"
       responses:
@@ -128,6 +205,9 @@ paths:
       tags: [assistant]
       summary: Ask JARVIS about saved memories
       description: Handles saving, repeating, correcting, and searching memories.
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -146,6 +226,9 @@ paths:
       operationId: getMemorySummary
       tags: [assistant]
       summary: Get a lightweight memory summary
+      security:
+        - SessionCookie: []
+        - BearerAuth: []
       responses:
         "200":
           description: Memory summary
@@ -154,6 +237,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/MemorySummary"
 components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: jarvis_access
+    BearerAuth:
+      type: http
+      scheme: bearer
   parameters:
     MemoryId:
       name: id
@@ -170,6 +261,54 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
   schemas:
+    AuthUser:
+      type: object
+      required: [id, email]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: ["string", "null"]
+          format: email
+    AuthSession:
+      type: object
+      required: [authenticated, user]
+      properties:
+        authenticated:
+          type: boolean
+        user:
+          anyOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+    AuthCredentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+    AuthResult:
+      type: object
+      required: [authenticated, user, message]
+      properties:
+        authenticated:
+          type: boolean
+        user:
+          anyOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: "null"
+        message:
+          type: string
+    SignOutResult:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
     HealthStatus:
       type: object
       properties:
