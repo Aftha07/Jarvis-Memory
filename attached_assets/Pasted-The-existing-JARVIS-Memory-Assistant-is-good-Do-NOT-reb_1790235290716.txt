@@ -1,0 +1,71 @@
+The existing JARVIS Memory Assistant is good. Do NOT rebuild or remove the existing features. Keep the current Supabase database, authentication, memory saving, search, Repeat, correction, voice, and UI.
+
+I now want to add an important requirement:
+
+## HANDS-FREE OFFICE JARVIS
+
+My main goal is that I should NOT have to open the JARVIS website, click the microphone, or press any button every time I want to use it.
+
+I want a hands-free experience on my office computer.
+
+Example:
+
+I walk into my office and say:
+
+"Jarvis"
+
+JARVIS should detect the wake word and respond by voice:
+
+"Yes?"
+
+Then I say:
+
+"Today I met Ahmed from ABC Company. He needs 5 operators next month."
+
+JARVIS should process it using the EXISTING memory system, save it to the SAME Supabase database, and reply:
+
+"Noted."
+
+Later I should be able to say:
+
+"Jarvis"
+
+JARVIS: "Yes?"
+
+Me:
+"What did Ahmed tell me?"
+
+JARVIS should search the existing Supabase memories and speak the answer.
+
+### IMPORTANT TECHNICAL REQUIREMENT
+
+Do not pretend that a normal browser website can reliably listen continuously in the background.
+
+Keep the existing web application as the main JARVIS interface.
+
+In addition, design a lightweight desktop/background companion for Windows/macOS that:
+
+* Can start automatically when the computer starts.
+* Runs quietly in the background.
+* Listens locally for the wake word "Jarvis".
+* Does NOT continuously upload or permanently record office conversations.
+* Only starts command capture after detecting "Jarvis".
+* Uses the same existing JARVIS backend/database.
+* Can save memories, search memories, repeat the last memory, correct memories, and create reminders.
+* Speaks JARVIS responses aloud.
+* Does not require me to manually open the website every day.
+* Can stay signed in securely on my personal office computer.
+
+The normal website must continue working independently for viewing history, searching memories, editing records, settings, and backup.
+
+For now, first inspect the existing project and create the architecture for this feature without breaking anything already working.
+
+If implementing a true always-on wake-word desktop component cannot be done reliably inside Replit's hosted browser environment, clearly separate the desktop companion code so I can later run/install it on my office Windows PC or Mac.
+
+Do not replace Supabase and do not create a second database.
+
+The final concept should be:
+
+Computer starts → JARVIS companion starts automatically → I say "Jarvis" → JARVIS says "Yes?" → I speak → JARVIS saves/answers → I continue my work.
+
+I should not need to touch the computer for normal daily JARVIS commands.
